@@ -9,7 +9,7 @@ import urllib.parse
 import uuid
 
 import jinja2
-import orjson
+import ujson
 from fastapi import (
     FastAPI,
     HTTPException,
@@ -43,9 +43,7 @@ def url_path_for(context: dict, name: str, **path_params: typing.Any) -> str:
 
 class PrettyJSONResponse(JSONResponse):
     def render(self, content: typing.Any) -> bytes:
-        return orjson.dumps(
-            database, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2
-        )
+        return ujson.dumps(database, indent=4)
 
 
 def encode(text):
@@ -256,7 +254,7 @@ async def import_json(
     logger.info("RECEIVED FILE ?")
     try:
         content = await file.read()
-        urls = orjson.loads(content)
+        urls = ujson.loads(content)
         if not isinstance(urls, list):
             raise ValueError(f"JSON document is not a list: {type(urls)}")
     except Exception as exc:
