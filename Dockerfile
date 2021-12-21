@@ -3,7 +3,7 @@ LABEL org.opencontainers.image.source https://github.com/offspot/content-filter
 
 # install wget for next step
 RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends curl unzip \
+    && apt-get install -y --no-install-recommends curl unzip build-essential make \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 # download files from (upstream) tiangolo/uvicorn-gunicorn-docker
