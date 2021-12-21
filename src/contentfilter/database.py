@@ -17,7 +17,7 @@ class Database(list):
     def _sync(self):
         """sync db to JSON on disk"""
         with open(self.fpath, "wb") as fh:
-            fh.write(ujson.dumps(self))
+            fh.write(ujson.dumps(self).encode("UTF-8"))
 
     def add(self, item):
         if item not in self:

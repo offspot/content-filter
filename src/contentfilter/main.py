@@ -43,7 +43,7 @@ def url_path_for(context: dict, name: str, **path_params: typing.Any) -> str:
 
 class PrettyJSONResponse(JSONResponse):
     def render(self, content: typing.Any) -> bytes:
-        return ujson.dumps(database, indent=4)
+        return ujson.dumps(database, indent=4).encode("UTF-8")
 
 
 def encode(text):
