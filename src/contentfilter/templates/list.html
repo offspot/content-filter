@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/javascript">
+  function getEventTarget(e, dontPreventDefault) {
+    if (!dontPreventDefault)
+      e.preventDefault();
+    e = e || window.event;
+    var target = e.target || e.srcElement;
+    if (target.nodeName == "I")
+      return target.parentElement;
+    return target;
+  }
+
+  function getRowElements(e) {
+    let row = getEventTarget(e).parentElement.parentElement;
+    return {
+      row: row,
+      edit_cell: row.querySelector(".edit-form"),
+      cancel_cell: row.querySelector(".cancel-btn"),
+      url_cell: row.querySelector(".show-url"),
+      btn_cell: row.querySelector(".edit-btn"),
+      form: row.querySelector("form"),
+    }
+  }
+
+  function AttachEventTo(element, type, handler) {
+    if (element.addEventListener) element.addEventListener(type, handler, false);
+    else element.attachEvent("on" + type, handler);
+  }
+
+  function showEditForm(e) {
+    let elems = getRowElements(e);
+    elems.edit_cell.className = elems.edit_cell.className.replace("d-none", "");
+    elems.cancel_cell.className = elems.cancel_cell.className.replace("d-none", "");
+    elems.url_cell.className += " d-none";
+    elems.btn_cell.className += " d-none";
+    elems.row.querySelector("input").focus();
+  }
+
+  function cancelEditForm(e) {
+    let elems = getRowElements(e);
+    elems.form.reset();
+    elems.edit_cell.className += " d-none";
+    elems.cancel_cell.className += " d-none";
+    elems.url_cell.className = elems.url_cell.className.replace("d-none", "");
+    elems.btn_cell.className = elems.btn_cell.className.replace("d-none", "");
+  }
+
+  function decodeURIOnPaste(e) {
+    let paste = (e.clipboardData || window.clipboardData).getData('text');
+    let input = getEventTarget(e);
+    try {
+      input.value = decodeURI(paste);
+    } catch {}
+  }
+
+  function decodeURIOnChange(e) {
+    let input = getEventTarget(e);
+    try {
+      input.value = decodeURI(input.value);
+    } catch {}
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll("input[type=url]").forEach(function (elem) {
+      AttachEventTo(elem, "change", decodeURIOnChange);
+      AttachEventTo(elem, "paste", decodeURIOnPaste);
+    });
+
+    // attach edit event to all edit btns in rows
+    document.querySelectorAll(".edit-btn button").forEach(function (elem) {
+      AttachEventTo(elem, "click", showEditForm);
+    });
+
+    document.querySelectorAll(".cancel-btn .btn-cancel").forEach(function (elem) {
+      AttachEventTo(elem, "click", cancelEditForm);
+    });
+  });
+</script>
+
+<h2>Add an URL</h2>
+<form class="row row-cols-lg-auto g-3 align-items-center" method="POST" action="{{ url_for('add_url') }}">
+  <div class="col-lg-8 col-12">
+    <label class="visually-hidden" for="addUrlInput">URL</label>
+      <div class="input-group">
+        <div class="input-group-text"><i class="bi-globe" role="img"></i></div>
+        <input name="url" type="url" class="form-control" id="addUrlInput" placeholder="http://app/content" required>
+      </div>
+  </div>
+
+  <div class="col-lg-4 col-12">
+    <button type="submit" class="btn btn-primary"><i class="bi-plus-circle-fill" role="img"></i> Add URL</button>
+  </div>
+</form>
+
+<hr />
+
+<p class="alert alert-light">URLs listed bellow are to be blocked. <strong>Only applies</strong> to URLs served by this server (ie. not facebook or any other online service).</p>
+<table class="table">
+  <thead>
+    <tr><th>#</th><th>URL</th><th colspan="2"></th></tr>
+  </thead>
+  <tbody>
+  {% for url in urls %}
+    <tr>
+      <form method="POST" action="{{ url_for('edit_url', url=url|encode) }}">
+      <td>{{ loop.index }}</td>
+      <td class="show-url"><a href="{{ url }}" target="_blank">{{ url }}</a></td>
+      <td class="edit-form d-none">
+        <input name="new_url" type="url" class="form-control form-control-sm" value="{{ url }}" required>
+      </td>
+      <td class="cancel-btn d-none">
+        <button type="submit" class="btn btn-warning btn-sm mt-1"><i class="bi-pencil-square" role="img"></i> update</button>
+        <button class="btn-cancel btn btn-sm btn-secondary mt-1"><i class="bi-backspace" role="img"></i> cancel</button>
+      </td>
+      <td class="edit-btn"><button class="btn btn-sm btn-warning"><i class="bi-pencil-square" role="img"></i> edit</button></td>
+      <td><a onclick="javascript:return confirm(`Are you sure you wan to remove ${this.getAttribute('data-url')} ?`)" data-url="{{ url }}" href="{{ url_for('remove_url', url=url|encode) }}" class="btn btn-sm btn-danger"><i class="bi-dash-circle-fill" role="img"></i> remove</button></td>
+      </form>
+    </tr>
+  {% else %}
+    <tr><td colspan="3">No URL at the moment. Add one?</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

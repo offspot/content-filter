@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+urls.json
+data/
+caddy.json
+
+src/contentfilter/assets/bootstrap-icons-*
+src/contentfilter/assets/bootstrap-*

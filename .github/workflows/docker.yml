@@ -1,0 +1,31 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+jobs:
+  build-and-push:
+    name: Deploy Docker Image
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build and push
+        uses: openzim/docker-publish-action@v5
+        with:
+          image-name: offspot/content-filter
+          on-master: dev
+          tag-pattern: /^v([0-9.]+)$/
+          latest-on-tag: true
+          restrict-to: offspot/content-filter
+          registries: ghcr.io
+          credentials:
+            GHCRIO_USERNAME=${{ secrets.GHCR_USERNAME }}
+            GHCRIO_TOKEN=${{ secrets.GHCR_TOKEN }}
+          platforms: |
+            linux/amd64
+            linux/arm/v7
+            linux/arm64

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+
+<p>The <em>content-filter</em> allows you to block certain URLs on your server. <strong>Only URLs served by your server are to be blocked</strong>.</p>
+<p>Simply navigate to the URL you want to block, and copy-paste it into the content-filter. Blocking is effective immediately. You might have to use the *refresh* button of your browser to see it.</p>
+
+<h2>Export to file</h2>
+<p>Here you can export your blocked URLS list into a standard JSON file. This can be used as backup or to copy those into another installation.</p>
+<p><a download href="{{ url_for('export_json') }}" class="btn btn-primary"><i class="bi-download" role="img"></i> Export All</a></p>
+
+<h2>Import from file</h2>
+<p>Importing URLs from a previously imported file. Existing URLs in your list won't be removed.</p>
+<form method="POST" action="{{ url_for('import_json') }}" enctype="multipart/form-data" class="form row">
+  <div class="col">
+    <input type="file" class="form-control" name="file" />
+  </div>
+  <div class="col">
+    <button type="submit" class="btn btn-primary"><i class="bi-upload" role="img"></i> Import JSON file</button>
+  </div>
+</form>
+
+<hr />
+
+<h2>Settings</h2>
+<p>You should not care about those values except for maintenance/assistance purpose.</p>
+<table class="table table-sm">
+  <thead><tr><th>Key</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr>
+      <th><code>DATABASE_PATH</code></th>
+      <td><code>{{ conf.database_path }}</code></td>
+    </tr>
+    <tr>
+      <th><code>WEBROOT_PREFIX</code></th>
+      <td><code>{{ conf.webroot_prefix }}</code></td>
+    </tr>
+    <tr>
+      <th><code>REVERSE_PROXY</code></th>
+      <td><code>{{ conf.reverse_proxy_type }}</code></td>
+    </tr>
+    <tr>
+      <th><code>FILTER_RESPECTS_SCHEME</code></th>
+      <td><code>{{ conf.filter_respects_scheme }}</code></td>
+    </tr>
+    <tr>
+      <th><code>FILTER_RESPECTS_HOST</code></th>
+      <td><code>{{ conf.filter_respects_host }}</code></td>
+    </tr>
+      <th><code>CADDY_ADMIN_URL</code></th>
+      <td><code>{{ conf.caddy_api_endpoint }}</code></td>
+    </tr>
+      <th><code>CADDY_SERVER_NAME</code></th>
+      <td><code>{{ conf.caddy_server_name }}</code></td>
+    </tr>
+</dl>
+
+{% endblock %}
