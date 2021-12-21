@@ -1,6 +1,6 @@
 import pathlib
 
-import usjon
+import ujson
 
 from contentfilter.constants import Conf
 
@@ -9,7 +9,7 @@ class Database(list):
     def __init__(self, fpath: pathlib.Path):
         if fpath.exists():
             with open(fpath, "r") as fh:
-                super().__init__(usjon.loads(fh.read()))
+                super().__init__(ujson.loads(fh.read()))
         else:
             super().__init__()
         self.fpath = fpath
@@ -17,7 +17,7 @@ class Database(list):
     def _sync(self):
         """sync db to JSON on disk"""
         with open(self.fpath, "wb") as fh:
-            fh.write(usjon.dumps(self))
+            fh.write(ujson.dumps(self))
 
     def add(self, item):
         if item not in self:
