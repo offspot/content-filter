@@ -1,5 +1,29 @@
-FROM tiangolo/uvicorn-gunicorn:python3.8-slim
+FROM python:3.8-slim
 LABEL org.opencontainers.image.source https://github.com/offspot/content-filter
+
+# install wget for next step
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends curl unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+# download files from (upstream) tiangolo/uvicorn-gunicorn-docker
+RUN curl -L -O https://github.com/tiangolo/uvicorn-gunicorn-docker/archive/refs/heads/master.zip && \
+    unzip master.zip && \
+    mv uvicorn-gunicorn-docker-master/docker-images/* /tmp && \
+    rm -rf ./uvicorn-gunicorn-docker-master && \
+    rm -f ./master.zip
+# execute steps from upstam
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
+    mv /tmp/start.sh /start.sh && \
+    chmod +x /start.sh && \
+    mv /tmp/gunicorn_conf.py /gunicorn_conf.py && \
+    mv /tmp/start-reload.sh /start-reload.sh && \
+    chmod +x /start-reload.sh && \
+    mv /tmp/app /app
+
+WORKDIR /app/
+ENV PYTHONPATH=/app
+EXPOSE 80
 
 # make sure to mount it for it to persist
 ENV DATABASE_PATH /data/urls.json
