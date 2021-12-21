@@ -12,6 +12,15 @@ RUN curl -L -O https://github.com/tiangolo/uvicorn-gunicorn-docker/archive/refs/
     mv uvicorn-gunicorn-docker-master/docker-images/* /tmp && \
     rm -rf ./uvicorn-gunicorn-docker-master && \
     rm -f ./master.zip
+
+# install already-built wheels on arm to save 20mn!
+RUN if [ "$TARGETARCH" = "arm32v7" ] ; then pip install \
+    http://download.kiwix.org/dev/PyYAML-6.0-cp38-cp38-linux_armv7l.whl \
+    http://download.kiwix.org/dev/uvloop-0.16.0-cp38-cp38-linux_armv7l.whl \
+    http://download.kiwix.org/dev/httptools-0.2.0-cp38-cp38-linux_armv7l.whl \
+    http://download.kiwix.org/dev/websockets-10.1-cp38-cp38-linux_armv7l.whl ; fi
+
+
 # execute steps from upstam
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
     mv /tmp/start.sh /start.sh && \
