@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.8-slim-buster
 LABEL org.opencontainers.image.source https://github.com/offspot/content-filter
 
 # install wget for next step
