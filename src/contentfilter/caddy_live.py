@@ -53,7 +53,7 @@ def block_all_urls(urls: typing.List[str]):
             entry["host"] = [uri.netloc]
         entries.append(entry)
     if not entries:
-        entries.append({"host": "test.blocked"})
+        entries.append({"host": ["test.blocked"]})
     try:
         requests.patch(get_url("/id/cfrules/match/"), json=entries, timeout=0.5)
     except requests.exceptions.ReadTimeout:
