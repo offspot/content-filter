@@ -1,5 +1,8 @@
 # content-filter
 
+[![CodeFactor](https://www.codefactor.io/repository/github/offspot/content-filter/badge)](https://www.codefactor.io/repository/github/offspot/content-filter)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 This tool is a **blacklist-based content censorship tool** for the by *Offspot* admins
 to limit access to certain URLs served by said *Offspot*.
 
