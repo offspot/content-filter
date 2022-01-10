@@ -14,7 +14,7 @@ RUN curl -L -O https://github.com/tiangolo/uvicorn-gunicorn-docker/archive/refs/
     rm -f ./master.zip
 
 # install already-built wheels on arm to save 20mn!
-RUN if [ "$TARGETARCH" = "arm32v7" ] ; then pip install \
+RUN if [ "$TARGETARCH" = "arm32v7" ] ; then pip install --no-cache-dir  \
     http://download.kiwix.org/dev/PyYAML-6.0-cp38-cp38-linux_armv7l.whl \
     http://download.kiwix.org/dev/uvloop-0.16.0-cp38-cp38-linux_armv7l.whl \
     http://download.kiwix.org/dev/httptools-0.2.0-cp38-cp38-linux_armv7l.whl \
@@ -66,16 +66,12 @@ ENV MAX_WORKERS 1
 
 # launched by upstream /start.sh
 COPY prestart.sh /app/prestart.sh
-RUN chmod +x /app/prestart.sh
-
-# reove from upstream image
-RUN rm -f /app/main.py
+RUN chmod +x /app/prestart.sh && rm -f /app/main.py
 
 WORKDIR /tmp
 RUN pip install --no-cache-dir --upgrade pip setuptools toml invoke
 COPY pyproject.toml README.md setup.cfg setup.py tasks.py /tmp/
-RUN invoke install-deps --package runtime
-RUN invoke download-js
+RUN invoke install-deps --package runtime && invoke download-js
 COPY src/ /tmp/src
 RUN python setup.py install && mv /tmp/src /src
 WORKDIR /src
