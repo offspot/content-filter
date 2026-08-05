@@ -19,6 +19,12 @@
   </div>
 </form>
 
+<h2 class="mt-4">Delete all URLs</h2>
+<p>Remove all blocked URLs from your list. This action cannot be undone.</p>
+<form method="POST" action="{{ url_for('remove_all_urls') }}" onsubmit="return confirm('Are you sure you want to delete all blocked URLs? This cannot be undone.');">
+  <button type="submit" class="btn btn-danger"><i class="bi-trash" role="img"></i> Delete All</button>
+</form>
+
 <hr />
 
 <h2>Settings</h2>
