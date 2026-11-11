@@ -1,37 +1,213 @@
 [build-system]
-requires = ["wheel", "setuptools", "toml"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[dependencies]
-runtime = [
-    "jinja2 >=3.0,<4.0.0",
-    "fastapi >=0.70.0,<1.0",
-    "python-multipart",
-    "requests >=2.26.0,<3.0",
-    "itsdangerous >=1.1.0,<3.0.0",
-    "pyyaml >=5.3.1,<6.0.0",
-    "ujson >=4.0.1,<5.0.0",
+[project]
+name = "contentfilter"
+requires-python = ">=3.14,<3.15"
+description = "Manage a list of URLs to filter and inform a Caddy reverse-proxy"
+readme = "README.md"
+authors = [
+    { name = "Kiwix", email = "dev@kiwix.org" }
 ]
-test = [
-    "pytest >=6.2.4,<7.0.0",
-    "pytest-asyncio >=0.16.0,<1.0",
-    "pytest-cov >=2.12.0,<4.0.0",
-    "coverage >=6.0.2,<7.0",
+dependencies = [
+  "jinja2==3.1.6",
+  "fastapi[standard]==0.143.0",
+  "python-multipart==0.0.32",
+  "requests==2.34.2",
+  "itsdangerous==2.2.0",
+  "pyyaml==6.0.3",
+  "orjson==3.13.0",
 ]
+license = "GPL-3.0-or-later"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.14",
+]
+dynamic = ["version"]
+
+
+[project.optional-dependencies]
+scripts = ["invoke==3.0.3"]
+lint = ["ruff==0.16.8"]
+check = ["pyright==1.1.414", "contentfilter[test]"]
+test = ["pytest==9.1.1", "coverage==7.16.1"]
 dev = [
-    "black >=21.9b0,<22",
-    "isort >=5.9.3,<6.0",
-    "pre-commit >=2.15.0,<3.0",
-    "flake8 >=<4.0.1,<5.0",
-    "uvicorn[standard] >=0.12.0,<0.16.0",
+  "pre-commit==4.6.2",
+  "ipython==9.17.1",
+  "contentfilter[scripts]",
+  "contentfilter[lint]",
+  "contentfilter[test]",
+  "contentfilter[check]",
 ]
 
-[tool.isort]
-profile = "black"
-known_third_party = ["fastapi", "pydantic", "starlette"]
+[tool.hatch.version]
+path = "src/contentfilter/__about__.py"
 
-[tool.black]
-target-version = ['py36', 'py37', 'py38', 'py39']
+[tool.hatch.build]
+exclude = ["/.github"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/contentfilter"]
+
+[tool.hatch.envs.default]
+features = ["dev"]
+
+[tool.hatch.envs.test]
+features = ["scripts", "test"]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.12"]
+
+[tool.hatch.envs.test.scripts]
+run = "inv test --args '{args}'"
+run-cov = "inv test-cov --args '{args}'"
+report-cov = "inv report-cov"
+coverage = "inv coverage --args '{args}'"
+html = "inv coverage --html --args '{args}'"
+
+[tool.hatch.envs.lint]
+template = "lint"
+skip-install = false
+features = ["scripts", "lint"]
+
+[tool.hatch.envs.lint.scripts]
+black = "inv lint-black --args '{args}'"
+ruff = "inv lint-ruff --args '{args}'"
+all = "inv lintall --args '{args}'"
+fix-black = "inv fix-black --args '{args}'"
+fix-ruff = "inv fix-ruff --args '{args}'"
+fixall = "inv fixall --args '{args}'"
+
+[tool.hatch.envs.check]
+features = ["scripts", "check"]
+
+[tool.hatch.envs.check.scripts]
+pyright = "inv check-pyright --args '{args}'"
+all = "inv checkall --args '{args}'"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+  "A", # flake8-builtins
+  # "ANN",  # flake8-annotations
+  "ARG", # flake8-unused-arguments
+  # "ASYNC",  # flake8-async
+  "B", # flake8-bugbear
+  # "BLE",  # flake8-blind-except
+  "C4",  # flake8-comprehensions
+  "C90", # mccabe
+  # "COM",  # flake8-commas
+  # "D",  # pydocstyle
+  # "DJ",  # flake8-django
+  "DTZ", # flake8-datetimez
+  "E",   # pycodestyle (default)
+  "EM",  # flake8-errmsg
+  # "ERA",  # eradicate
+  # "EXE",  # flake8-executable
+  "F", # Pyflakes (default)
+  # "FA",  # flake8-future-annotations
+  "FBT", # flake8-boolean-trap
+  # "FLY",  # flynt
+  # "G",  # flake8-logging-format
+  "I",   # isort
+  "ICN", # flake8-import-conventions
+  # "INP",  # flake8-no-pep420
+  # "INT",  # flake8-gettext
+  "ISC", # flake8-implicit-str-concat
+  "N",   # pep8-naming
+  # "NPY",  # NumPy-specific rules
+  # "PD",  # pandas-vet
+  # "PGH",  # pygrep-hooks
+  # "PIE",  # flake8-pie
+  # "PL",  # Pylint
+  "PLC", # Pylint: Convention
+  "PLE", # Pylint: Error
+  "PLR", # Pylint: Refactor
+  "PLW", # Pylint: Warning
+  # "PT",  # flake8-pytest-style
+  # "PTH",  # flake8-use-pathlib
+  # "PYI",  # flake8-pyi
+  "Q", # flake8-quotes
+  # "RET",  # flake8-return
+  # "RSE",  # flake8-raise
+  "RUF", # Ruff-specific rules
+  "S",   # flake8-bandit
+  # "SIM",  # flake8-simplify
+  # "SLF",  # flake8-self
+  "T10", # flake8-debugger
+  "T20", # flake8-print
+  # "TCH",  # flake8-type-checking
+  # "TD",  # flake8-todos
+  "TID", # flake8-tidy-imports
+  # "TRY",  # tryceratops
+  "UP",  # pyupgrade
+  "W",   # pycodestyle
+  "YTT", # flake8-2020
+]
+ignore = [
+  # Allow non-abstract empty methods in abstract base classes
+  "B027",
+  # Remove flake8-errmsg since we consider they bloat the code and provide limited value
+  "EM",
+  # Allow boolean positional values in function calls, like `dict.get(... True)`
+  "FBT003",
+  # Ignore checks for possible passwords
+  "S105",
+  "S106",
+  "S107",
+  # Ignore warnings on subprocess.run / popen
+  "S603",
+  # Ignore complexity
+  "C901",
+  "PLR0911",
+  "PLR0912",
+  "PLR0913",
+  "PLR0915",
+]
+unfixable = [
+  # Don't touch unused imports
+  "F401",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["contentfilter"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "TID252"]
+"src/contentfilter/entrypoints/*" = ["PLC0415"]
+
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "../tests"]
+minversion = "7.3"
+testpaths = ["tests"]
+pythonpath = [".", "src"]
+
+[tool.coverage.paths]
+contentfilter = ["src/contentfilter"]
+tests = ["tests"]
+
+[tool.coverage.run]
+source_pkgs = ["contentfilter"]
+branch = true
+parallel = true
+omit = ["src/contentfilter/__about__.py"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+
+[tool.pyright]
+include = ["src", "tests", "tasks.py"]
+exclude = [".env/**", ".venv/**"]
+extraPaths = ["src"]
+pythonVersion = "3.14"
+typeCheckingMode = "basic"
+disableBytesTypePromotions = true

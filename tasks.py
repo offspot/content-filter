@@ -1,12 +1,10 @@
-import io
 import pathlib
 import shutil
-import sys
 import tempfile
-import zipfile
 import urllib.request
+import zipfile
 
-from invoke import task
+from invoke import tasks
 
 deps_options = ("runtime", "test", "dev")
 root = pathlib.Path(__file__).parent
@@ -14,50 +12,18 @@ root = pathlib.Path(__file__).parent
 
 def download_to(url, fpath):
     """poor man's wget"""
-    with urllib.request.urlopen(url) as response, open(fpath, "wb") as fh:  # nosec
+    with urllib.request.urlopen(url) as response, open(fpath, "wb") as fh:  # nosec  # noqa: S310
         fh.write(response.read())
 
 
-@task
-def install_deps(c, package=deps_options[0]):
-    """install dependencies for runtime (default) or extra packages
-
-    packages:
-        - runtime: default, to run the contentfilter
-        - test: to run the test suite
-        - dev: all deps to develop the contentfilter"""
-    if package not in deps_options:
-        print(
-            f"Invalid deps package `{package}`. Choose from: {','.join(deps_options)}"
-        )
-        sys.exit(1)
-
-    try:
-        import toml
-    except ImportError:
-        c.run("pip install toml>=0.10.2")
-        import toml
-
-    packages = []
-    manifest = toml.load("pyproject.toml")
-    # include deps from required package and previous ones in list
-    for option in deps_options[: deps_options.index(package) + 1]:
-        packages += manifest["dependencies"][option]
-
-    c.run(
-        "pip install -r /dev/stdin",
-        in_stream=io.StringIO("\n".join(packages)),
-    )
-
-
-@task
+@tasks.task
 def serve(c, args=""):
     """run devel HTTP server locally. Use --args to specify additional uvicorn args"""
     with c.cd("src"):
         c.run(f"python -m uvicorn contentfilter.main:app --reload {args}", pty=True)
 
 
-@task
+@tasks.task
 def download_js(c):
     assets_fpath = root / "src/contentfilter/assets"
     bs_version = "5.1.3"

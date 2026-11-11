@@ -1,23 +1,27 @@
 import pathlib
+from ast import TypeVar
+from collections.abc import (
+    Callable,
+)
 
-import ujson
+import orjson
 
 from contentfilter.constants import Conf
+
+_T = TypeVar("_T")
 
 
 class Database(list):
     def __init__(self, fpath: pathlib.Path):
         if fpath.exists():
-            with open(fpath, "r") as fh:
-                super().__init__(ujson.loads(fh.read()))
+            super().__init__(orjson.loads(fpath.read_bytes()))
         else:
             super().__init__()
         self.fpath = fpath
 
     def _sync(self):
         """sync db to JSON on disk"""
-        with open(self.fpath, "wb") as fh:
-            fh.write(ujson.dumps(self).encode("UTF-8"))
+        self.fpath.write_bytes(orjson.dumps(self))
 
     def add(self, item):
         if item not in self:
@@ -51,8 +55,8 @@ class Database(list):
         super().reverse(*args)
         self._sync()
 
-    def sort(self, *args):
-        super().sort(*args)
+    def sort(self, key: Callable, reverse: bool = False) -> None:  # type: ignore
+        super().sort(key=key, reverse=reverse)
         self._sync()
 
 

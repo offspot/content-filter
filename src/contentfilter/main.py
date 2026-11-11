@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# vim: ai ts=4 sts=4 et sw=4 nu
-
 import http
 import secrets
 import typing
@@ -9,30 +5,34 @@ import urllib.parse
 import uuid
 
 import jinja2
-import ujson
+import orjson
 from fastapi import (
+    Depends,
     FastAPI,
+    File,
+    Form,
     HTTPException,
     Request,
-    Form,
     UploadFile,
-    File,
-    Depends,
+)
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+    RedirectResponse,
 )
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from starlette.middleware.sessions import SessionMiddleware
-from fastapi.responses import PlainTextResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.sessions import SessionMiddleware
 
-from contentfilter import __description__, __title__, __version__
+from contentfilter import caddy_live as cl
+from contentfilter.__about__ import __description__, __title__, __version__
 from contentfilter.constants import Conf, ReverseProxyType, logger
 from contentfilter.database import database
-from contentfilter import caddy_live as cl
 
 
 @jinja2.pass_context
@@ -43,7 +43,7 @@ def url_path_for(context: dict, name: str, **path_params: typing.Any) -> str:
 
 class PrettyJSONResponse(JSONResponse):
     def render(self, content: typing.Any) -> bytes:
-        return ujson.dumps(database, indent=4).encode("UTF-8")
+        return orjson.dumps(database, option=orjson.OPT_INDENT_2)
 
 
 def encode(text):
@@ -58,7 +58,7 @@ def uri_validator(url):
     try:
         result = urllib.parse.urlparse(url)
         return all([result.scheme, result.netloc])
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 
@@ -72,9 +72,7 @@ def get_flashed_messages(request: Request):
     return request.session.pop("_messages") if "_messages" in request.session else []
 
 
-async def on_change(
-    added_url: typing.Optional[str] = None, removed_url: typing.Optional[str] = None
-):
+async def on_change(added_url: str | None = None, removed_url: str | None = None):
     logger.debug(f"on_change {added_url=}, {removed_url=}")
     if Conf.reverse_proxy_type != ReverseProxyType.CADDY_LIVE:
         logger.debug("NOT LIVVVVVVEE")
@@ -158,6 +156,7 @@ async def http_exception_handler(request, exc):
 async def root(request: Request, username: str = AuthDependency):
     """Greetings"""
     return templates.TemplateResponse(
+        request,
         "list.html",
         {"request": request, "page": "home", "urls": database, "username": username},
     )
@@ -176,7 +175,7 @@ async def logout(request: Request):
 async def settings(request: Request, username: str = AuthDependency):
     """Greetings"""
     return templates.TemplateResponse(
-        "settings.html", {"request": request, "page": "settings"}
+        request, "settings.html", {"request": request, "page": "settings"}
     )
 
 
@@ -233,7 +232,6 @@ async def remove_url(request: Request, url: str, username: str = AuthDependency)
         flash(request, "URL successfuly removed from the list", "success")
     else:
         flash(request, "This URL wasn't in the list", "info")
-
     return RedirectResponse(request.url_for("home"), status_code=http.HTTPStatus.FOUND)
 
 
@@ -254,10 +252,10 @@ async def import_json(
     logger.info("RECEIVED FILE ?")
     try:
         content = await file.read()
-        urls = ujson.loads(content)
+        urls = orjson.loads(content)
         if not isinstance(urls, list):
-            raise ValueError(f"JSON document is not a list: {type(urls)}")
-    except Exception as exc:
+            raise TypeError(f"JSON document is not a list: {type(urls)}")
+    except Exception as exc:  # noqa: BLE001
         flash(request, f"Unable to import this file: {exc}.", "danger")
         return redir_resp
 

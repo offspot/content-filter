@@ -1,37 +1,32 @@
-FROM python:3.8-slim-buster
-LABEL org.opencontainers.image.source https://github.com/offspot/content-filter
+FROM python:3.14-alpine
+LABEL org.opencontainers.image.source=https://github.com/offspot/content-filter
 
-# install wget for next step
-RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends curl unzip build-essential make \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-# download files from (upstream) tiangolo/uvicorn-gunicorn-docker
-RUN curl -L -O https://github.com/tiangolo/uvicorn-gunicorn-docker/archive/refs/heads/master.zip && \
-    unzip master.zip && \
-    mv uvicorn-gunicorn-docker-master/docker-images/* /tmp && \
-    rm -rf ./uvicorn-gunicorn-docker-master && \
-    rm -f ./master.zip
+ENV VIRTUAL_ENV=/usr/local/env
 
-# install already-built wheels on arm to save 20mn!
-RUN if [ "$TARGETARCH" = "arm32v7" ] ; then pip install --no-cache-dir  \
-    http://download.kiwix.org/dev/PyYAML-6.0-cp38-cp38-linux_armv7l.whl \
-    http://download.kiwix.org/dev/uvloop-0.16.0-cp38-cp38-linux_armv7l.whl \
-    http://download.kiwix.org/dev/httptools-0.2.0-cp38-cp38-linux_armv7l.whl \
-    http://download.kiwix.org/dev/websockets-10.1-cp38-cp38-linux_armv7l.whl ; fi
+RUN \
+    apk add --no-cache dumb-init \
+    # python dependencies
+    && python3 -m venv $VIRTUAL_ENV \
+    && $VIRTUAL_ENV/bin/pip3 install --no-cache-dir -U pip
 
+# Copy pyproject.toml and its dependencies
+COPY pyproject.toml README.md /src/
+COPY src/contentfilter/__about__.py /src/src/contentfilter/__about__.py
 
-# execute steps from upstam
-RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
-    mv /tmp/start.sh /start.sh && \
-    chmod +x /start.sh && \
-    mv /tmp/gunicorn_conf.py /gunicorn_conf.py && \
-    mv /tmp/start-reload.sh /start-reload.sh && \
-    chmod +x /start-reload.sh && \
-    mv /tmp/app /app
+# Install Python dependencies
+RUN $VIRTUAL_ENV/bin/pip install --no-cache-dir /src[scripts]
 
-WORKDIR /app/
-ENV PYTHONPATH=/app
+COPY src /src/src
+COPY *.md /src/
+COPY tasks.py /src/
+COPY prestart.sh /usr/local/bin/entrypoint
+
+WORKDIR /src
+RUN \
+    $VIRTUAL_ENV/bin/pip install --no-cache-dir /src \
+    && $VIRTUAL_ENV/bin/invoke download-js \
+    && rm -rf /src
+
 EXPOSE 80
 
 # make sure to mount it for it to persist
@@ -64,17 +59,5 @@ ENV APP_MODULE "contentfilter.main:app"
 # DONT CHANGE: important as the Database is just a list
 ENV MAX_WORKERS 1
 
-# launched by upstream /start.sh
-COPY prestart.sh /app/prestart.sh
-RUN chmod +x /app/prestart.sh && rm -f /app/main.py
-
-WORKDIR /tmp
-RUN pip install --no-cache-dir --upgrade pip setuptools toml invoke
-COPY pyproject.toml README.md setup.cfg setup.py tasks.py /tmp/
-RUN invoke install-deps --package runtime && invoke download-js
-COPY src/ /tmp/src
-RUN python setup.py install && mv /tmp/src /src
-WORKDIR /src
-
-# from upsteam
-CMD ["/start.sh"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "/usr/local/bin/entrypoint"]
+CMD ["/usr/local/env/bin/fastapi","run", "--port", "80", "--entrypoint", "contentfilter.main:app"]

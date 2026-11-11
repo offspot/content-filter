@@ -1,7 +1,6 @@
-""" Orchestrate a Caddy server via its admin API """
+"""Orchestrate a Caddy server via its admin API"""
 
 import http
-import typing
 import urllib.parse
 
 import requests
@@ -16,12 +15,11 @@ def get_url(path: str):
 
 def setup():
     """Initialize Caddy's config (installs named rule)"""
-    resp = requests.get(get_url("/id/cfrules"))
+    resp = requests.get(get_url("/id/cfrules"), timeout=Conf.caddy_timeout)
     if resp.status_code == http.HTTPStatus.OK:
         return
 
-    with open(Conf.src_root / "templates" / "blocked.html") as fh:
-        template = fh.read()
+    template = Conf.src_root.joinpath("templates").joinpath("blocked.html").read_text()
 
     resp = requests.put(
         get_url(f"/config/apps/http/servers/{Conf.caddy_server_name}/routes/0"),
@@ -33,15 +31,18 @@ def setup():
                     "@id": "cfrules-handler",
                     "handler": "static_response",
                     "body": template,
+                    "status_code": "451",
+                    "headers": {"Content-Type": ["text/html; charset=utf-8"]}
                 }
             ],
         },
+        timeout=Conf.caddy_timeout
     )
     logger.debug(f"SETUP CODE {resp.status_code=}")
     logger.debug(f"SETUP RESP BODY {resp.text=}")
 
 
-def block_all_urls(urls: typing.List[str]):
+def block_all_urls(urls: list[str]):
     """Set Caddy's block list completely"""
     entries = []
     for url in urls:
