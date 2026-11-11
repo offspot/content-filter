@@ -27,5 +27,4 @@ jobs:
             GHCRIO_TOKEN=${{ secrets.GHCR_TOKEN }}
           platforms: |
             linux/amd64
-            linux/arm/v7
             linux/arm64
