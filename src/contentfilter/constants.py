@@ -19,6 +19,9 @@ class ReverseProxyType(Enum):
 @dataclass
 class Conf:
     src_root: pathlib.Path = pathlib.Path(__file__).parent
+    assets_path: pathlib.Path = pathlib.Path(
+        os.getenv("ASSETS_PATH", "") or pathlib.Path(__file__).parent.joinpath("assets")
+    )
     database_path: pathlib.Path = pathlib.Path(os.getenv("DATABASE_PATH", "urls.json"))
     webroot_prefix: str = os.getenv("WEBROOT_PREFIX", "").strip()
     reverse_proxy_type: ReverseProxyType = getattr(  # noqa: RUF009

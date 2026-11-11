@@ -2,6 +2,7 @@ FROM python:3.14-alpine
 LABEL org.opencontainers.image.source=https://github.com/offspot/content-filter
 
 ENV VIRTUAL_ENV=/usr/local/env
+ENV ASSETS_PATH=/assets
 
 RUN \
     apk add --no-cache dumb-init \
@@ -25,6 +26,7 @@ WORKDIR /src
 RUN \
     $VIRTUAL_ENV/bin/pip install --no-cache-dir /src \
     && $VIRTUAL_ENV/bin/invoke download-js \
+    && mv $VIRTUAL_ENV/lib/python3.14/site-packages/contentfilter/assets $ASSETS_PATH \
     && rm -rf /src
 
 EXPOSE 80

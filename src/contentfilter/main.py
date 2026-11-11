@@ -58,7 +58,7 @@ def uri_validator(url):
     try:
         result = urllib.parse.urlparse(url)
         return all([result.scheme, result.netloc])
-    except Exception:  # noqa: BLE001
+    except Exception:
         return False
 
 
@@ -103,7 +103,7 @@ webapp = FastAPI(title=__title__, description=__description__, version=__version
 
 webapp.mount(
     f"{Conf.webroot_prefix}/assets",
-    StaticFiles(directory=Conf.src_root.joinpath("assets")),
+    StaticFiles(directory=Conf.assets_path),
     name="assets",
 )
 templates = Jinja2Templates(directory=Conf.src_root.joinpath("templates"))
@@ -255,7 +255,7 @@ async def import_json(
         urls = orjson.loads(content)
         if not isinstance(urls, list):
             raise TypeError(f"JSON document is not a list: {type(urls)}")
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         flash(request, f"Unable to import this file: {exc}.", "danger")
         return redir_resp
 
