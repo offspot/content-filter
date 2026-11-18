@@ -8,6 +8,8 @@ import requests
 from contentfilter.constants import Conf, logger
 from contentfilter.database import database
 
+KIWIX_VIEWER_PREFIX = "/viewer"
+
 
 def get_url(path: str):
     return f"{Conf.caddy_api_endpoint}{path}"
@@ -32,11 +34,11 @@ def setup():
                     "handler": "static_response",
                     "body": template,
                     "status_code": "451",
-                    "headers": {"Content-Type": ["text/html; charset=utf-8"]}
+                    "headers": {"Content-Type": ["text/html; charset=utf-8"]},
                 }
             ],
         },
-        timeout=Conf.caddy_timeout
+        timeout=Conf.caddy_timeout,
     )
     logger.debug(f"SETUP CODE {resp.status_code=}")
     logger.debug(f"SETUP RESP BODY {resp.text=}")
@@ -52,6 +54,19 @@ def block_all_urls(urls: list[str]):
             ...
         if Conf.filter_respects_host:
             entry["host"] = [uri.netloc]
+
+        # kiwix-serve viewer tweak
+        # when using the kiwix-serve viewer, all paths are identical
+        # and the content is hidden behing fragment.
+        # instead of blocking the kiwix viewer altogether, we convert the URL
+        # to the equivalent /content/ one
+        if (
+            uri.netloc == Conf.filter_kiwix_tweak_domain
+            and uri.path == "/viewer"
+            and uri.fragment
+        ):
+            entry["path"] = [f"/content/{uri.fragment}"]
+
         entries.append(entry)
     if not entries:
         entries.append({"host": ["test.blocked"]})

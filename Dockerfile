@@ -44,6 +44,7 @@ ENV REVERSE_PROXY caddy_live
 # otherwise, omits the domain and only produces path rules
 ENV FILTER_RESPECTS_SCHEME Y
 ENV FILTER_RESPECTS_HOST Y
+ENV FILTER_KIWIX_TWEAK_DOMAIN browse.kiwix.hotspot
 
 # caddy's API endpoint (ex: http://caddy:2019) must be enabled in caddy conf
 # content-filter will automatically update caddy config upon each change

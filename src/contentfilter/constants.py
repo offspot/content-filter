@@ -31,6 +31,7 @@ class Conf:
         os.getenv("FILTER_RESPECTS_SCHEME", "").upper() in yesno
     )
     filter_respects_host: bool = os.getenv("FILTER_RESPECTS_HOST", "").upper() in yesno
+    filter_kiwix_tweak_domain: str = os.getenv("FILTER_KIWIX_TWEAK_DOMAIN", "").lower()
     caddy_api_endpoint: str | None = os.getenv("CADDY_ADMIN_URL", "").strip() or None
     caddy_server_name: str | None = os.getenv("CADDY_SERVER_NAME", "").strip()
     allowed_origins = os.getenv(
