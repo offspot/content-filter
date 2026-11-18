@@ -78,7 +78,7 @@
   });
 </script>
 
-<h2>Add an URL</h2>
+<h2>Block an URL</h2>
 <form class="row row-cols-lg-auto g-3 align-items-center" method="POST" action="{{ url_for('add_url') }}">
   <div class="col-lg-8 col-12">
     <label class="visually-hidden" for="addUrlInput">URL</label>
@@ -89,16 +89,17 @@
   </div>
 
   <div class="col-lg-4 col-12">
-    <button type="submit" class="btn btn-primary"><i class="bi-plus-circle-fill" role="img"></i> Add URL</button>
+    <button type="submit" class="btn btn-primary"><i class="bi-plus-circle-fill" role="img"></i> Block URL</button>
   </div>
 </form>
 
 <hr />
 
-<p class="alert alert-light">URLs listed bellow are to be blocked. <strong>Only applies</strong> to URLs served by this server (ie. not facebook or any other online service).</p>
+<p>The below list URLs are blocked.<br />
+Please note that only URLs served by this server can be blocked (ie. not facebook or any other online service).</p>
 <table class="table">
   <thead>
-    <tr><th>#</th><th>URL</th><th colspan="2"></th></tr>
+    <tr><th>#</th><th>Blocked URL</th><th colspan="2"></th></tr>
   </thead>
   <tbody>
   {% for url in urls %}

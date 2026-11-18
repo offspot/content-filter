@@ -14,10 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Adapated stack for Kiwix's convention and Python 3.14
+- Block page now more polished and smaller size
 
 ### Fixed
 
 - Removing all URLs (/remove/all) being captured by /remove/{url}
+- Texts in UI
 
 ## [1.0] – 2022-01-10
 

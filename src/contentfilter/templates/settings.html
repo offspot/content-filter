@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 
-<p>The <em>content-filter</em> allows you to block certain URLs on your server. <strong>Only URLs served by your server are to be blocked</strong>.</p>
-<p>Simply navigate to the URL you want to block, and copy-paste it into the content-filter. Blocking is effective immediately. You might have to use the *refresh* button of your browser to see it.</p>
+<p>The <em>content-filter</em> allows you to block certain URLs on your server. <strong>You can only block URLs served by your own server</strong>.</p>
+<p>Blocking is effective immediately. Simply navigate to the URL you want to block, and copy-paste it into the content-filter.</p>
+<p>You might have to use refresh to see the change.</p>
 
-<h2>Export to file</h2>
-<p>Here you can export your blocked URLS list into a standard JSON file. This can be used as backup or to copy those into another installation.</p>
+<h4>Export to file</h4>
+<p>You can export your blocked URLs list into a standard JSON file.<br />
+This can be used as backup or to copy into another installation.</p>
 <p><a download href="{{ url_for('export_json') }}" class="btn btn-primary"><i class="bi-download" role="img"></i> Export All</a></p>
 
-<h2>Import from file</h2>
-<p>Importing URLs from a previously imported file. Existing URLs in your list won't be removed.</p>
+<h4>Import from file</h4>
+<p>Importing URLs from a previously exported file. URLs from your existing block list won't be removed.</p>
 <form method="POST" action="{{ url_for('import_json') }}" enctype="multipart/form-data" class="form row">
   <div class="col">
     <input type="file" class="form-control" name="file" />
@@ -19,45 +21,22 @@
   </div>
 </form>
 
-<h2 class="mt-4">Delete all URLs</h2>
+<h4 class="mt-4">Delete all URLs</h4>
 <p>Remove all blocked URLs from your list. This action cannot be undone.</p>
 <form method="POST" action="{{ url_for('remove_all_urls') }}" onsubmit="return confirm('Are you sure you want to delete all blocked URLs? This cannot be undone.');">
   <button type="submit" class="btn btn-danger"><i class="bi-trash" role="img"></i> Delete All</button>
 </form>
 
-<hr />
-
-<h2>Settings</h2>
-<p>You should not care about those values except for maintenance/assistance purpose.</p>
-<table class="table table-sm">
-  <thead><tr><th>Key</th><th>Value</th></tr></thead>
-  <tbody>
-    <tr>
-      <th><code>DATABASE_PATH</code></th>
-      <td><code>{{ conf.database_path }}</code></td>
-    </tr>
-    <tr>
-      <th><code>WEBROOT_PREFIX</code></th>
-      <td><code>{{ conf.webroot_prefix }}</code></td>
-    </tr>
-    <tr>
-      <th><code>REVERSE_PROXY</code></th>
-      <td><code>{{ conf.reverse_proxy_type }}</code></td>
-    </tr>
-    <tr>
-      <th><code>FILTER_RESPECTS_SCHEME</code></th>
-      <td><code>{{ conf.filter_respects_scheme }}</code></td>
-    </tr>
-    <tr>
-      <th><code>FILTER_RESPECTS_HOST</code></th>
-      <td><code>{{ conf.filter_respects_host }}</code></td>
-    </tr>
-      <th><code>CADDY_ADMIN_URL</code></th>
-      <td><code>{{ conf.caddy_api_endpoint }}</code></td>
-    </tr>
-      <th><code>CADDY_SERVER_NAME</code></th>
-      <td><code>{{ conf.caddy_server_name }}</code></td>
-    </tr>
-</dl>
+<!-- 
+DATABASE_PATH: {{ conf.database_path }}
+WEBROOT_PREFIX: {{ conf.webroot_prefix }}
+ASSETS_PATH: {{ conf.assets_path }}
+REVERSE_PROXY: {{ conf.reverse_proxy_type }}
+FILTER_RESPECTS_SCHEME: {{ conf.filter_respects_scheme }}
+FILTER_RESPECTS_HOST: {{ conf.filter_respects_host }}
+FILTER_KIWIX_TWEAK_DOMAIN: {{ conf.filter_kiwix_tweak_domain }}
+CADDY_ADMIN_URL: {{ conf.caddy_api_endpoint }}
+CADDY_SERVER_NAME: {{ conf.caddy_server_name }}
+-->
 
 {% endblock %}
