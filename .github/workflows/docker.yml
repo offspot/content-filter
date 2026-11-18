@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - v*
+      - '*'
 
 jobs:
   build-and-push:
@@ -18,7 +18,7 @@ jobs:
         with:
           image-name: offspot/content-filter
           on-master: dev
-          tag-pattern: /^v([0-9.]+)$/
+          tag-pattern: /^([0-9.]+)$/
           latest-on-tag: true
           restrict-to: offspot/content-filter
           registries: ghcr.io
