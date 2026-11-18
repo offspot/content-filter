@@ -222,6 +222,33 @@ async def edit_url(
     return RedirectResponse(request.url_for("home"), status_code=http.HTTPStatus.FOUND)
 
 
+@webapp.post("/remove/all", name="remove_all_urls")
+async def clear_urls(
+    request: Request,
+    username: str = AuthDependency,
+):
+    redir_resp = RedirectResponse(
+        request.url_for("settings"), status_code=http.HTTPStatus.FOUND
+    )
+    try:
+        num_urls = len(database)
+        database.clear()
+        if num_urls:
+            flash(
+                request,
+                f"Successfully removed {num_urls} blocked URL(s) from the list",
+                "success",
+            )
+        else:
+            flash(request, "The list was already empty", "info")
+    except Exception as exc:
+        flash(request, f"Unable to remove URLs: {exc}.", "danger")
+    return redir_resp
+
+
+app.mount(Conf.webroot_prefix, webapp)
+
+
 @webapp.get("/remove/{url}", name="remove_url")
 async def remove_url(request: Request, url: str, username: str = AuthDependency):
     url = decode(url)
@@ -277,30 +304,3 @@ async def import_json(
             "warning",
         )
     return redir_resp
-
-
-@webapp.post("/remove/all", name="remove_all_urls")
-async def clear_urls(
-    request: Request,
-    username: str = AuthDependency,
-):
-    redir_resp = RedirectResponse(
-        request.url_for("settings"), status_code=http.HTTPStatus.FOUND
-    )
-    try:
-        num_urls = len(database)
-        database.clear()
-        if num_urls:
-            flash(
-                request,
-                f"Successfully removed {num_urls} blocked URL(s) from the list",
-                "success",
-            )
-        else:
-            flash(request, "The list was already empty", "info")
-    except Exception as exc:
-        flash(request, f"Unable to remove URLs: {exc}.", "danger")
-    return redir_resp
-
-
-app.mount(Conf.webroot_prefix, webapp)

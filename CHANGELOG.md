@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adapated stack for Kiwix's convention and Python 3.14
 
+### Fixed
+
+- Removing all URLs (/remove/all) being captured by /remove/{url}
+
 ## [1.0] – 2022-01-10
 
 - Initial versio with basic caddylive support
