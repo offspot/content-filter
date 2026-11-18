@@ -24,7 +24,7 @@ def serve(c, args=""):
 
 
 @tasks.task
-def download_js(c):
+def download_assets(c):
     assets_fpath = root / "src/contentfilter/assets"
     bs_version = "5.1.3"
     bsi_version = "1.7.1"

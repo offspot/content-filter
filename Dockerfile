@@ -25,7 +25,7 @@ COPY prestart.sh /usr/local/bin/entrypoint
 WORKDIR /src
 RUN \
     $VIRTUAL_ENV/bin/pip install --no-cache-dir /src \
-    && $VIRTUAL_ENV/bin/invoke download-js \
+    && $VIRTUAL_ENV/bin/invoke download-assets \
     && mv $VIRTUAL_ENV/lib/python3.14/site-packages/contentfilter/assets $ASSETS_PATH \
     && rm -rf /src
 
