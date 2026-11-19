@@ -91,7 +91,7 @@ def setup():
         return
 
     cl.setup()
-    cl.block_all_urls(database)
+    cl.block_only_those_urls(database)
 
 
 class UrlItem(BaseModel):
@@ -233,6 +233,7 @@ async def clear_urls(
     try:
         num_urls = len(database)
         database.clear()
+        await cl.unblock_all_urls()
         if num_urls:
             flash(
                 request,
@@ -264,7 +265,12 @@ async def remove_url(request: Request, url: str, username: str = AuthDependency)
 
 @webapp.get("/export/raw.json", name="export_json")
 async def export_json(request: Request, username: str = AuthDependency):
-    return PrettyJSONResponse(content=database)
+    return PrettyJSONResponse(
+        content=database,
+        headers={
+            "Content-Disposition": 'attachment; filename="content-filter_export.json"'
+        },
+    )
 
 
 @webapp.post("/import/", name="import_json")
@@ -286,16 +292,15 @@ async def import_json(
         flash(request, f"Unable to import this file: {exc}.", "danger")
         return redir_resp
 
-    nb_imported = 0
-    for url in urls:
-        if url not in database:
-            if not uri_validator(url):
-                continue
-            database.add(url)
-            nb_imported += 1
-    if nb_imported:
+    good_urls = [url for url in urls if uri_validator(url) and url not in database]
+    cl.block_many_urls(good_urls)
+    for url in good_urls:
+        database.add(url)
+    if good_urls:
         flash(
-            request, f"Successfuly imported {nb_imported} URLs into the list", "success"
+            request,
+            f"Successfuly imported {len(good_urls)} URLs into the list",
+            "success",
         )
     else:
         flash(
