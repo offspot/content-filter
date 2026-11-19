@@ -57,6 +57,8 @@ def decode(text):
 def uri_validator(url):
     try:
         result = urllib.parse.urlparse(url)
+        if result.netloc in Conf.filter_protected_hosts:
+            return False
         return all([result.scheme, result.netloc])
     except Exception:
         return False

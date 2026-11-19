@@ -32,6 +32,9 @@ class Conf:
     )
     filter_respects_host: bool = os.getenv("FILTER_RESPECTS_HOST", "").upper() in yesno
     filter_kiwix_tweak_domain: str = os.getenv("FILTER_KIWIX_TWEAK_DOMAIN", "").lower()
+    filter_protected_hosts: list[str] = os.getenv("FILTER_PROTECTED_HOSTS", "").split(  # noqa: RUF009
+        ","
+    )
     caddy_api_endpoint: str | None = os.getenv("CADDY_ADMIN_URL", "").strip() or None
     caddy_server_name: str | None = os.getenv("CADDY_SERVER_NAME", "").strip()
     allowed_origins = os.getenv(
