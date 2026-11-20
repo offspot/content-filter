@@ -1,0 +1,209 @@
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-11-20 17:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: src/contentfilter/main.py:203 src/contentfilter/main.py:235
+msgid "Incorrect username or password"
+msgstr ""
+
+#: src/contentfilter/main.py:257 src/contentfilter/main.py:277
+msgid "Supplied URL is not a valid URL"
+msgstr ""
+
+#: src/contentfilter/main.py:259
+msgid "This URL is already in the list"
+msgstr ""
+
+#: src/contentfilter/main.py:263
+msgid "URL successfuly added to the list"
+msgstr ""
+
+#: src/contentfilter/main.py:281
+msgid "Updated URL already in list. Remove this one instead"
+msgstr ""
+
+#: src/contentfilter/main.py:285
+msgid "This URL is not in the list. Add it instead"
+msgstr ""
+
+#: src/contentfilter/main.py:310
+#, python-format
+msgid "Successfully removed %(num_urls)s blocked URL(s) from the list"
+msgstr ""
+
+#: src/contentfilter/main.py:315
+msgid "The list was already empty"
+msgstr ""
+
+#: src/contentfilter/main.py:317
+#, python-format
+msgid "Unable to remove URLs: %(exc)s."
+msgstr ""
+
+#: src/contentfilter/main.py:331
+msgid "URL successfuly removed from the list"
+msgstr ""
+
+#: src/contentfilter/main.py:333
+msgid "This URL wasn't in the list"
+msgstr ""
+
+#: src/contentfilter/main.py:364
+#, python-format
+msgid "Unable to import this file: %(exc)s."
+msgstr ""
+
+#: src/contentfilter/main.py:376
+#, python-format
+msgid "Successfuly imported %(num_urls)s URLs into the list"
+msgstr ""
+
+#: src/contentfilter/main.py:384
+msgid "No URL imported from that file. Was it empty? Duplicates?"
+msgstr ""
+
+#: src/contentfilter/templates/base.html:5
+#: src/contentfilter/templates/base.html:20
+msgid "Content-filter"
+msgstr ""
+
+#: src/contentfilter/templates/base.html:26
+msgid "Toggle navigation"
+msgstr ""
+
+#: src/contentfilter/templates/base.html:32
+msgid "Home"
+msgstr ""
+
+#: src/contentfilter/templates/base.html:33
+msgid "Advanced"
+msgstr ""
+
+#: src/contentfilter/templates/base.html:35
+msgid "Log-out"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:65
+#, python-format
+msgid "Are you sure you want to remove %(url)s?"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:86
+msgid "Block an URL"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:89
+msgid "URL"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:92
+msgid "http://app/content"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:97
+msgid "Block URL"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:103
+msgid ""
+"The below list URLs are blocked.<br />\n"
+"Please note that only URLs served by this server can be blocked (ie. not facebook or any other online service)."
+msgstr ""
+
+#: src/contentfilter/templates/list.html:107
+msgid "#"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:107
+msgid "Blocked URL"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:120
+msgid "update"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:121
+msgid "cancel"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:123
+msgid "edit"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:124
+msgid "remove"
+msgstr ""
+
+#: src/contentfilter/templates/list.html:128
+msgid "No URL at the moment. Add one?"
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:4
+msgid "Are you sure you want to delete all blocked URLs? This cannot be undone."
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:7
+msgid "The <em>content-filter</em> allows you to block certain URLs on your server. <strong>You can only block URLs served by your own server</strong>."
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:8
+msgid "Blocking is effective immediately. Simply navigate to the URL you want to block, and copy-paste it into the content-filter."
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:9
+msgid "You might have to use refresh to see the change."
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:11
+msgid "Export to file"
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:12
+msgid ""
+"You can export your blocked URLs list into a standard JSON file.<br />\n"
+"This can be used as backup or to copy into another installation."
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:14
+msgid "Export All"
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:16
+msgid "Import from file"
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:17
+msgid "Importing URLs from a previously exported file. URLs from your existing block list won't be removed."
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:23
+msgid "Import JSON file"
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:27
+msgid "Delete all URLs"
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:28
+msgid "Remove all blocked URLs from your list. This action cannot be undone."
+msgstr ""
+
+#: src/contentfilter/templates/settings.html:30
+msgid "Delete All"
+msgstr ""
+

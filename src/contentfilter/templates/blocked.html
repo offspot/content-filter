@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Access Denied</title>
+        <title data-lang-id="title">Access Denied</title>
         <link
             rel="icon"
             href=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABDlBMVEVHcEztIjC/AD/uIjD/AAD/AADtIzHtIzD/AADtIzHMMzPuIjDuIjDwITDuIi/tIjDyJDDuIjHtIjDuIjHtIzHtIjHtIjHuIzDuIjHvIzPsIjCqAADtIzH/AFXuIjDrITDtIzDuIjDuIjDrIjHsIjH/Pz/pHy/tIjDoISz/MzPuIjDzISzuIzDtIzC/Pz/uIDDuIzHtAAD/JjXsAAD7JTT5JTPzJDL2JDP8JTT0mJv//f3/JTT////uJDLuKjb4JDP+JTT6JTPuKzfuLDjwYmftABXyJDLxIzLwIzHuNj/5JDPtAAvuIjH1qavuLjn1qKryIzLzkZTzkZXtAAzuIjDuJDHuNT7uNkD//v74JTMbHPBEAAAAMHRSTlMA+wT7AwL9/AH+BaisREv6FfnJh+7A+U+/Mo0D2gNaNXPW8kNSBDCsFwX6F/ysBC/i8q6OAAADB0lEQVR4XqWX53LiMBSFL82y6TWUECCBAGm7cje99/Sy5f1fZBUHxlhrAowOv8z4O+Ojei846fQSiPh6tVwpFCrlap0HostTOExuH4C3WLo7v5irimEo6vzi/K5U9AL43AfgZzxANpfXWoY+w8gUnulGS8vnsgD82R7cR15IZ6YtXXC5OAGvJXAul6C3ppk0wJnvO55kD8WVgXDN4f/EXQsDJR4yX9oh3g/RQE/1ILxDyKP2AlHw8868j4dwso8onLJA/WQYeMcYJH1iqUXwHkW0ZYK87MgHpVsO7xV3KwVNB5q/SkkxAR8gISalrmgHEiolneADdSKlTMQSz0OQ4vc4BD8ZS35ISDF8hGJSAvzb6yesIuEYAwEtw9aK8kE0qXH4KHFaMkrAzQwE+hF8pCL9AAHXfKiHaOCjawe6H7QD6oXWDjzEVdqgM5yMtoHRZNihDdQ4QYl+QFrx0Hx3NRYf7zfA/aM4XnVpB4+SBrc5hJkBleDjl/zQbsi/79f8b7nRfpB/USnQIENgOIXss0Dz4lO73W6IxMHkxQZ5fBJpB+E5S/BLyLVc9vwm31w7rPmm6WBP4WrlCA7evM7Z88uE/0N+poPJfz0+yfZx4PS8FwCKU8GWf7h6+ATaXw6LBeE3jw+roS2FMC0CQMmeoDsZmx+8cdjwZorxpGvPUAKAmmEfgpGFEPD1lfCW3cg+CEYNgD/XqW3wKG85NJtbvPxIbQj9nIebixk1i+awWdiat6bVkjC7qEN1bqGUgyWLpzSvQvkv2uWwn0dqGSoKwrsc9vEYKRUoGB7s4LAQX5pWguaLuHDgsccoMBs4R3h3ivDuHKGssgxir8w6jT+hzriQmJcy+2Zi385FjTpQ3nYfKG/UgaIVgflIYz5UnY71zq5jveNwrDteLB3ni6XjeLGAm+lqY71cma931gKDvcSxiqwlQ5HFUOaxFprspS57sU2X++iQch/R5T57w8He8rA3XextH3vjSbe+U7r1nVKt7/7mu7bdfNcOar7p9v9m0/7ffNP+/wMo1G14l4FT1AAAAABJRU5ErkJggg=="
@@ -148,13 +148,46 @@
                         fill="#fff"
                     />
                 </svg>
-                <h1>Access denied</h1>
+                <h1 data-lang-id="title">Access denied</h1>
                 <div>
-                    <p>The web page you are trying to access<br />has been blocked on this network.</p>
+                    <p data-lang-id="webpage-is-blocked">The web page you are trying to access<br />has been blocked on this network.</p>
                     <code><pre>{http.request.scheme}://{http.request.hostport}{http.request.uri.path}</pre></code>
-                    <div><button class="btn" onclick="history.back()">Go back</button></div>
+                    <div>
+                        <button data-lang-id="back-button" lang="en" class="btn" onclick="history.back()">Go back</button>
+                    </div>
                 </div>
             </div>
         </main>
+    <script type="text/javascript">
+        // browser languages
+        var acceptedLangs = new Set(Array.from(navigator.languages, (lang) => lang.split('-')[0]));
+        // CF translations
+        var supportedLocales = __SUPPORTED_LOCALES;
+        // fallback language
+        var defaultLocale = '__DEFAULT_LOCALE';
+        var contentLocale = 'en';
+        var translations = {
+            'fr': {
+                'title': 'Accès refusé',
+                'webpage-is-blocked': 'La page web à laquelle vous essayez d’accéder<br />a été bloquée sur ce réseau.',
+                'back-button': 'Retour',
+            },
+        }
+        function getLocale() {
+            for (const lang of acceptedLangs) {
+                if (supportedLocales.indexOf(lang) != -1)
+                    return lang;
+            }
+            return defaultLocale;
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            let locale = getLocale();
+            if (locale == contentLocale)
+                return;
+            document.querySelectorAll("[data-lang-id]").forEach(function (elem) {
+                elem.innerHTML = translations[locale][elem.dataset.langId];
+            });
+        });
+    </script>
     </body>
 </html>

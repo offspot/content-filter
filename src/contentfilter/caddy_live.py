@@ -34,7 +34,13 @@ def setup():
     if resp.status_code == http.HTTPStatus.OK:
         return
 
-    template = Conf.src_root.joinpath("templates").joinpath("blocked.html").read_text()
+    template = (
+        Conf.src_root.joinpath("templates")
+        .joinpath("blocked.html")
+        .read_text()
+        .replace("__SUPPORTED_LOCALES", str(list(Conf.supported_locales)))
+        .replace("__DEFAULT_LOCALE", Conf.default_locale)
+    )
 
     resp = requests.put(
         get_url(f"/config/apps/http/servers/{Conf.caddy_server_name}/routes/0"),

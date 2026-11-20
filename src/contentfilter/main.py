@@ -1,12 +1,15 @@
+import gettext
 import http
 import secrets
 import typing
 import urllib.parse
 import uuid
+from pathlib import Path
 from typing import Annotated
 
 import jinja2
 import orjson
+from babel.support import Translations
 from fastapi import (
     Depends,
     FastAPI,
@@ -26,6 +29,9 @@ from fastapi.responses import (
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from jinja2.environment import Environment
+from jinja2.loaders import FileSystemLoader
+from jinja2.utils import select_autoescape
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
@@ -34,6 +40,15 @@ from contentfilter import caddy_live as cl
 from contentfilter.__about__ import __description__, __title__, __version__
 from contentfilter.constants import Conf, ReverseProxyType, logger
 from contentfilter.database import database
+
+TRANSLATIONS = {
+    locale: Translations.load(Conf.locales_dir, locale)
+    for locale in Conf.supported_locales
+}
+
+
+def _(message: str) -> str:
+    return TRANSLATIONS[Conf.current_locale].gettext(message=message)
 
 
 @jinja2.pass_context
@@ -45,6 +60,17 @@ def url_path_for(context: dict, name: str, **path_params: typing.Any) -> str:
 class PrettyJSONResponse(JSONResponse):
     def render(self, content: typing.Any) -> bytes:
         return orjson.dumps(database, option=orjson.OPT_INDENT_2)
+
+
+def get_locale_for(request: Request) -> str:
+    accept_language = request.headers.get("Accept-Language", "")
+    # Extract language codes from header and strip regions (e.g., 'en-US' -> 'en')
+    parsed_languages = [tag.split("-")[0] for tag in accept_language.split(",")]
+    # Find the first matching language from our supported locales
+    for lang in parsed_languages:
+        if lang in Conf.supported_locales:
+            return lang
+    return Conf.default_locale
 
 
 def encode(text):
@@ -95,7 +121,7 @@ def get_flashed_messages(request: Request):
 async def on_change(added_url: str | None = None, removed_url: str | None = None):
     logger.debug(f"on_change {added_url=}, {removed_url=}")
     if Conf.reverse_proxy_type != ReverseProxyType.CADDY_LIVE:
-        logger.debug("NOT LIVVVVVVEE")
+        logger.debug("NOT LIVE")
         return
 
     if added_url:
@@ -114,8 +140,7 @@ def setup():
     for url in database:
         if new_url := uri_validator(url):
             if new_url != url:
-                if new_url not in database:
-                    database.add(new_url)
+                database.add(new_url)
                 database.remove(url)
         else:
             database.remove(url)
@@ -130,13 +155,29 @@ class UrlItem(BaseModel):
 
 app = FastAPI(title=__title__, description=__description__, version=__version__)
 webapp = FastAPI(title=__title__, description=__description__, version=__version__)
+jinja_env = Environment(
+    loader=FileSystemLoader(Conf.src_root.joinpath("templates")),
+    autoescape=select_autoescape(["html", "xml", "txt"]),
+    extensions=["jinja2.ext.i18n"],
+)
+
+
+@app.middleware("http")
+async def set_locale(request: Request, call_next):
+    locale = get_locale_for(request)
+    Conf.current_locale = locale
+    jinja_env.install_gettext_translations(TRANSLATIONS[locale])
+    response = await call_next(request)
+    jinja_env.uninstall_gettext_translations(TRANSLATIONS[locale])
+    return response
+
 
 webapp.mount(
     f"{Conf.webroot_prefix}/assets",
     StaticFiles(directory=Conf.assets_path),
     name="assets",
 )
-templates = Jinja2Templates(directory=Conf.src_root.joinpath("templates"))
+templates = Jinja2Templates(env=jinja_env)
 templates.env.globals["get_flashed_messages"] = get_flashed_messages
 templates.env.globals["url_path_for"] = url_path_for
 templates.env.globals["conf"] = Conf
@@ -164,7 +205,7 @@ def get_current_username(credentials: HTTPBasicCredentials = SecurityDependency)
     if not (correct_username and correct_password):
         raise HTTPException(
             status_code=http.HTTPStatus.UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail=_("Incorrect username or password"),
             headers={"WWW-Authenticate": "Basic"},
         )
     return credentials.username
@@ -196,7 +237,7 @@ async def root(request: Request, username: str = AuthDependency):
 async def logout(request: Request):
     raise HTTPException(
         status_code=http.HTTPStatus.UNAUTHORIZED,
-        detail="Incorrect username or password",
+        detail=_("Incorrect username or password"),
         headers={"WWW-Authenticate": "Basic"},
     )
 
@@ -218,13 +259,13 @@ async def add_url(
     logger.debug(f"ADDING {url=}")
     url = uri_validator(url)
     if not url:
-        flash(request, "Supplied URL is not a valid URL", "danger")
+        flash(request, _("Supplied URL is not a valid URL"), "danger")
     elif url in database:
-        flash(request, "This URL is already in the list", "info")
+        flash(request, _("This URL is already in the list"), "info")
     else:
         database.add(url)
         await on_change(added_url=url)
-        flash(request, "URL successfuly added to the list", "success")
+        flash(request, _("URL successfuly added to the list"), "success")
     return RedirectResponse(request.url_for("home"), status_code=http.HTTPStatus.FOUND)
 
 
@@ -238,13 +279,15 @@ async def edit_url(
     logger.debug(f"EDIT {url=} > {new_url=}")
     new_url = uri_validator(new_url)
     if not new_url:
-        flash(request, "Supplied URL is not a valid URL", "danger")
+        flash(request, _("Supplied URL is not a valid URL"), "danger")
     elif new_url in database:
         flash(
-            request, "Updated URL already in list. Remove this one instead", "warning"
+            request,
+            _("Updated URL already in list. Remove this one instead"),
+            "warning",
         )
     elif url not in database:
-        flash(request, "This URL `{url}` is not in the list. Add it instead", "info")
+        flash(request, _("This URL is not in the list. Add it instead"), "info")
     else:
         index = database.index(url)
         database[index] = new_url
@@ -268,13 +311,14 @@ async def clear_urls(
         if num_urls:
             flash(
                 request,
-                f"Successfully removed {num_urls} blocked URL(s) from the list",
+                _("Successfully removed %(num_urls)s blocked URL(s) from the list")
+                % {"num_urls": num_urls},
                 "success",
             )
         else:
-            flash(request, "The list was already empty", "info")
+            flash(request, _("The list was already empty"), "info")
     except Exception as exc:
-        flash(request, f"Unable to remove URLs: {exc}.", "danger")
+        flash(request, _("Unable to remove URLs: %(exc)s.") % {"exc": exc}, "danger")
     return redir_resp
 
 
@@ -288,9 +332,9 @@ async def remove_url(request: Request, url: str, username: str = AuthDependency)
     if url in database:
         database.remove(url)
         await on_change(removed_url=url)
-        flash(request, "URL successfuly removed from the list", "success")
+        flash(request, _("URL successfuly removed from the list"), "success")
     else:
-        flash(request, "This URL wasn't in the list", "info")
+        flash(request, _("This URL wasn't in the list"), "info")
     return RedirectResponse(request.url_for("home"), status_code=http.HTTPStatus.FOUND)
 
 
@@ -320,7 +364,9 @@ async def import_json(
         if not isinstance(urls, list):
             raise TypeError(f"JSON document is not a list: {type(urls)}")
     except Exception as exc:
-        flash(request, f"Unable to import this file: {exc}.", "danger")
+        flash(
+            request, _("Unable to import this file: %(exc)s.") % {"exc": exc}, "danger"
+        )
         return redir_resp
 
     good_urls = [uri_validator(url) for url in urls]
@@ -331,13 +377,14 @@ async def import_json(
             database.add(url)
         flash(
             request,
-            f"Successfuly imported {len(good_urls)} URLs into the list",
+            _("Successfuly imported %(num_urls)s URLs into the list")
+            % {"num_urls": len(good_urls)},
             "success",
         )
     else:
         flash(
             request,
-            "No URL imported from that file. Was it empty? Duplicates?",
+            _("No URL imported from that file. Was it empty? Duplicates?"),
             "warning",
         )
     return redir_resp

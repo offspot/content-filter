@@ -61,6 +61,11 @@
     } catch {}
   }
 
+  function get_confirm(url) {
+    let msg = `{{ _("Are you sure you want to remove %(url)s?")|format(url='${url}') }}`;
+    return confirm(msg);
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll("input[type=url]").forEach(function (elem) {
       AttachEventTo(elem, "change", decodeURIOnChange);
@@ -78,28 +83,28 @@
   });
 </script>
 
-<h2>Block an URL</h2>
+<h2>{{ _("Block an URL")|safe }}</h2>
 <form class="row row-cols-lg-auto g-3 align-items-center" method="POST" action="{{ url_for('add_url') }}">
   <div class="col-lg-8 col-12">
-    <label class="visually-hidden" for="addUrlInput">URL</label>
+    <label class="visually-hidden" for="addUrlInput">{{ _("URL")|safe }}</label>
       <div class="input-group">
         <div class="input-group-text"><i class="bi-globe" role="img"></i></div>
-        <input name="url" type="url" class="form-control" id="addUrlInput" placeholder="http://app/content" required>
+        <input name="url" type="url" class="form-control" id="addUrlInput" placeholder="{{ _('http://app/content') }}" required>
       </div>
   </div>
 
   <div class="col-lg-4 col-12">
-    <button type="submit" class="btn btn-primary"><i class="bi-plus-circle-fill" role="img"></i> Block URL</button>
+    <button type="submit" class="btn btn-primary"><i class="bi-plus-circle-fill" role="img"></i> {{ _("Block URL")|safe }}</button>
   </div>
 </form>
 
 <hr />
 
-<p>The below list URLs are blocked.<br />
-Please note that only URLs served by this server can be blocked (ie. not facebook or any other online service).</p>
+<p>{{ _("The below list URLs are blocked.<br />
+Please note that only URLs served by this server can be blocked (ie. not facebook or any other online service).")|safe }}</p>
 <table class="table">
   <thead>
-    <tr><th>#</th><th>Blocked URL</th><th colspan="2"></th></tr>
+    <tr><th>{{ _("#")|safe }}</th><th>{{ _("Blocked URL")|safe }}</th><th colspan="2"></th></tr>
   </thead>
   <tbody>
   {% for url in urls %}
@@ -112,15 +117,15 @@ Please note that only URLs served by this server can be blocked (ie. not faceboo
         <input name="new_url" type="url" class="form-control form-control-sm" value="{{ url }}" required>
       </td>
       <td class="cancel-btn d-none">
-        <button type="submit" class="btn btn-warning btn-sm mt-1"><i class="bi-pencil-square" role="img"></i> update</button>
-        <button class="btn-cancel btn btn-sm btn-secondary mt-1"><i class="bi-backspace" role="img"></i> cancel</button>
+        <button type="submit" class="btn btn-warning btn-sm mt-1"><i class="bi-pencil-square" role="img"></i> {{ _("update")|safe }}</button>
+        <button class="btn-cancel btn btn-sm btn-secondary mt-1"><i class="bi-backspace" role="img"></i> {{ _("cancel")|safe }}</button>
       </td>
-      <td class="edit-btn"><button class="btn btn-sm btn-warning"><i class="bi-pencil-square" role="img"></i> edit</button></td>
-      <td><a onclick="javascript:return confirm(`Are you sure you wan to remove ${this.getAttribute('data-url')} ?`)" data-url="{{ url }}" href="{{ url_for('remove_url', url=url|encode) }}" class="btn btn-sm btn-danger"><i class="bi-dash-circle-fill" role="img"></i> remove</button></td>
+      <td class="edit-btn"><button class="btn btn-sm btn-warning"><i class="bi-pencil-square" role="img"></i> {{ _("edit")|safe }}</button></td>
+      <td><a onclick="javascript:return get_confirm(this.getAttribute('data-url'))" data-url="{{ url }}" href="{{ url_for('remove_url', url=url|encode) }}" class="btn btn-sm btn-danger"><i class="bi-dash-circle-fill" role="img"></i> {{ _("remove")|safe }}</button></td>
       </form>
     </tr>
   {% else %}
-    <tr><td colspan="3">No URL at the moment. Add one?</td></tr>
+    <tr><td colspan="3">{{ _("No URL at the moment. Add one?")|safe }}</td></tr>
   {% endfor %}
   </tbody>
 </table>

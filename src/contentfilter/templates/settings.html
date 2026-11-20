@@ -1,30 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
+<script type="text/javascript">
+  var delete_all_msg = '{{ _("Are you sure you want to delete all blocked URLs? This cannot be undone.")|safe }}';
+</script>
 
-<p>The <em>content-filter</em> allows you to block certain URLs on your server. <strong>You can only block URLs served by your own server</strong>.</p>
-<p>Blocking is effective immediately. Simply navigate to the URL you want to block, and copy-paste it into the content-filter.</p>
-<p>You might have to use refresh to see the change.</p>
+<p>{{ _("The <em>content-filter</em> allows you to block certain URLs on your server. <strong>You can only block URLs served by your own server</strong>.")|safe }}</p>
+<p>{{ _("Blocking is effective immediately. Simply navigate to the URL you want to block, and copy-paste it into the content-filter.")|safe }}</p>
+<p>{{ _("You might have to use refresh to see the change.")|safe }}</p>
 
-<h4>Export to file</h4>
-<p>You can export your blocked URLs list into a standard JSON file.<br />
-This can be used as backup or to copy into another installation.</p>
-<p><a download href="{{ url_for('export_json') }}" class="btn btn-primary"><i class="bi-download" role="img"></i> Export All</a></p>
+<h4>{{ _("Export to file")|safe }}</h4>
+<p>{{ _("You can export your blocked URLs list into a standard JSON file.<br />
+This can be used as backup or to copy into another installation.")|safe }}</p>
+<p><a download href="{{ url_for('export_json') }}" class="btn btn-primary"><i class="bi-download" role="img"></i> {{ _("Export All")|safe }}</a></p>
 
-<h4>Import from file</h4>
-<p>Importing URLs from a previously exported file. URLs from your existing block list won't be removed.</p>
+<h4>{{ _("Import from file")|safe }}</h4>
+<p>{{ _("Importing URLs from a previously exported file. URLs from your existing block list won't be removed.")|safe }}</p>
 <form method="POST" action="{{ url_for('import_json') }}" enctype="multipart/form-data" class="form row">
   <div class="col">
     <input type="file" class="form-control" name="file" />
   </div>
   <div class="col">
-    <button type="submit" class="btn btn-primary"><i class="bi-upload" role="img"></i> Import JSON file</button>
+    <button type="submit" class="btn btn-primary"><i class="bi-upload" role="img"></i> {{ _("Import JSON file")|safe }}</button>
   </div>
 </form>
 
-<h4 class="mt-4">Delete all URLs</h4>
-<p>Remove all blocked URLs from your list. This action cannot be undone.</p>
-<form method="POST" action="{{ url_for('remove_all_urls') }}" onsubmit="return confirm('Are you sure you want to delete all blocked URLs? This cannot be undone.');">
-  <button type="submit" class="btn btn-danger"><i class="bi-trash" role="img"></i> Delete All</button>
+<h4 class="mt-4">{{ _("Delete all URLs")|safe }}</h4>
+<p>{{ _("Remove all blocked URLs from your list. This action cannot be undone.")|safe }}</p>
+<form method="POST" action="{{ url_for('remove_all_urls') }}" onsubmit="return confirm(delete_all_msg);">
+  <button type="submit" class="btn btn-danger"><i class="bi-trash" role="img"></i> {{ _("Delete All")|safe }}</button>
 </form>
 
 <!-- 

@@ -1,8 +1,8 @@
 import logging
 import os
-import pathlib
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("cf")
@@ -18,11 +18,11 @@ class ReverseProxyType(Enum):
 
 @dataclass
 class Conf:
-    src_root: pathlib.Path = pathlib.Path(__file__).parent
-    assets_path: pathlib.Path = pathlib.Path(
-        os.getenv("ASSETS_PATH", "") or pathlib.Path(__file__).parent.joinpath("assets")
+    src_root: Path = Path(__file__).parent
+    assets_path: Path = Path(
+        os.getenv("ASSETS_PATH", "") or Path(__file__).parent.joinpath("assets")
     )
-    database_path: pathlib.Path = pathlib.Path(os.getenv("DATABASE_PATH", "urls.json"))
+    database_path: Path = Path(os.getenv("DATABASE_PATH", "urls.json"))
     webroot_prefix: str = os.getenv("WEBROOT_PREFIX", "").strip()
     reverse_proxy_type: ReverseProxyType = getattr(  # noqa: RUF009
         ReverseProxyType, os.getenv("REVERSE_PROXY", "caddyfile").upper()
@@ -44,3 +44,9 @@ class Conf:
     auth_secret: str = os.getenv("AUTH_SECRET", os.urandom(24).hex())
     admin_password: str = os.getenv("ADMIN_PASSWORD", os.urandom(4).hex())
     caddy_timeout: int = 20
+    supported_locales: tuple[str, ...] = ("en", "fr")
+    default_locale: str = os.getenv("DEFAULT_LOCALE", "en").lower()
+
+    # changed by middleware
+    locales_dir: Path = Path(__file__).parent.joinpath("locales")
+    current_locale: str = os.getenv("DEFAULT_LOCALE", "en").lower()

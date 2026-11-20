@@ -127,3 +127,17 @@ Please, take a look at [`constants.py`](https://github.com/offspot/content-filte
 pip install uvicorn[default]
 ADMIN_PASSWORD=password PYTHONPATH=src uvicorn "contentfilter.main:app"
 ```
+
+
+### i18n
+
+```sh
+# add new lang (once)
+pybabel init -d src/contentfilter/locales -l fr --no-wrap -i ./src/locales/messages.po
+
+# update messages catalog (always)
+pybabel -v extract -F ./src/contentfilter/babel.config --no-wrap -o ./src/contentfilter/locales/messages.pot -k _lz -k _ -k _l ./src/
+# update locales catalogs
+pybabel -v update -i ./src/contentfilter/locales/messages.pot -d ./src/contentfilter/locales/ --no-wrap --init-missing -l fr
+pybabel -v compile --statistics -d ./src/contentfilter/locales/
+```

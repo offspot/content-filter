@@ -45,6 +45,8 @@ ENV REVERSE_PROXY caddy_live
 ENV FILTER_RESPECTS_SCHEME Y
 ENV FILTER_RESPECTS_HOST Y
 ENV FILTER_KIWIX_TWEAK_DOMAIN browse.kiwix.hotspot
+ENV FILTER_PROTECTED_HOSTS kiwix.hotspot,admin.kiwix.hotspot,filter.kiwix.hotspot
+ENV DEFAULT_LOCALE en
 
 # caddy's API endpoint (ex: http://caddy:2019) must be enabled in caddy conf
 # content-filter will automatically update caddy config upon each change
