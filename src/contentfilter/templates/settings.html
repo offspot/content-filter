@@ -35,6 +35,7 @@ REVERSE_PROXY: {{ conf.reverse_proxy_type }}
 FILTER_RESPECTS_SCHEME: {{ conf.filter_respects_scheme }}
 FILTER_RESPECTS_HOST: {{ conf.filter_respects_host }}
 FILTER_KIWIX_TWEAK_DOMAIN: {{ conf.filter_kiwix_tweak_domain }}
+FILTER_PROTECTED_HOSTS: {{ ", ".join(conf.filter_protected_hosts) }}
 CADDY_ADMIN_URL: {{ conf.caddy_api_endpoint }}
 CADDY_SERVER_NAME: {{ conf.caddy_server_name }}
 -->
