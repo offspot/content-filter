@@ -104,10 +104,11 @@ Please note that only URLs served by this server can be blocked (ie. not faceboo
   <tbody>
   {% for url in urls %}
     <tr>
-      <form method="POST" action="{{ url_for('edit_url', url=url|encode) }}">
+      <form method="POST" action="{{ url_for('edit_url') }}">
       <td>{{ loop.index }}</td>
       <td class="show-url"><a href="{{ url }}" target="_blank">{{ url }}</a></td>
       <td class="edit-form d-none">
+        <input name="url" type="hidden" value="{{ url }}" required>
         <input name="new_url" type="url" class="form-control form-control-sm" value="{{ url }}" required>
       </td>
       <td class="cancel-btn d-none">

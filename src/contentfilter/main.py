@@ -3,6 +3,7 @@ import secrets
 import typing
 import urllib.parse
 import uuid
+from typing import Annotated
 
 import jinja2
 import orjson
@@ -54,14 +55,31 @@ def decode(text):
     return bytes.fromhex(text).decode("UTF-8")
 
 
-def uri_validator(url):
+def uri_validator(url) -> str:
     try:
-        result = urllib.parse.urlparse(url)
-        if result.netloc in Conf.filter_protected_hosts:
-            return False
-        return all([result.scheme, result.netloc])
+        uri = urllib.parse.urlparse(url)
+        if uri.netloc in Conf.filter_protected_hosts:
+            return ""
+
+        # kiwix-serve viewer tweak
+        # when using the kiwix-serve viewer, all paths are identical
+        # and the content is hidden behing fragment.
+        # instead of blocking the kiwix viewer altogether, we convert the URL
+        # to the equivalent /content/ one
+        if (
+            uri.netloc == Conf.filter_kiwix_tweak_domain
+            and uri.path == "/viewer"
+            and uri.fragment
+        ):
+            uri = uri._replace(path=f"/content/{uri.fragment}")
+
+        # remove client-local data
+        uri = uri._replace(fragment="")
+        uri = uri._replace(query="")
+        uri = uri._replace(params="")
+        return uri.geturl() + ("/" if not uri.path else "")
     except Exception:
-        return False
+        return ""
 
 
 def flash(request: Request, message: typing.Any, category: str = "info") -> None:
@@ -91,6 +109,16 @@ async def on_change(added_url: str | None = None, removed_url: str | None = None
 def setup():
     if Conf.reverse_proxy_type != ReverseProxyType.CADDY_LIVE:
         return
+
+    # cleanup database
+    for url in database:
+        if new_url := uri_validator(url):
+            if new_url != url:
+                if new_url not in database:
+                    database.add(new_url)
+                database.remove(url)
+        else:
+            database.remove(url)
 
     cl.setup()
     cl.block_only_those_urls(database)
@@ -188,7 +216,8 @@ async def add_url(
     username: str = AuthDependency,
 ):
     logger.debug(f"ADDING {url=}")
-    if not uri_validator(url):
+    url = uri_validator(url)
+    if not url:
         flash(request, "Supplied URL is not a valid URL", "danger")
     elif url in database:
         flash(request, "This URL is already in the list", "info")
@@ -199,21 +228,21 @@ async def add_url(
     return RedirectResponse(request.url_for("home"), status_code=http.HTTPStatus.FOUND)
 
 
-@webapp.post("/edit/{url}", name="edit_url")
+@webapp.post("/edit/", name="edit_url")
 async def edit_url(
     request: Request,
-    url: str,
-    new_url: str = FormDataFinder,
+    url: Annotated[str, Form()],
+    new_url: Annotated[str, Form()],
     username: str = AuthDependency,
 ):
-    url = decode(url)
     logger.debug(f"EDIT {url=} > {new_url=}")
-    if not uri_validator(new_url):
+    new_url = uri_validator(new_url)
+    if not new_url:
         flash(request, "Supplied URL is not a valid URL", "danger")
-    elif not new_url:
-        flash(request, "Missing URL", "warning")
     elif new_url in database:
-        flash(request, "Updated URL already in list. Remove it instead", "warning")
+        flash(
+            request, "Updated URL already in list. Remove this one instead", "warning"
+        )
     elif url not in database:
         flash(request, "This URL `{url}` is not in the list. Add it instead", "info")
     else:
@@ -294,11 +323,12 @@ async def import_json(
         flash(request, f"Unable to import this file: {exc}.", "danger")
         return redir_resp
 
-    good_urls = [url for url in urls if uri_validator(url) and url not in database]
-    cl.block_many_urls(good_urls)
-    for url in good_urls:
-        database.add(url)
+    good_urls = [uri_validator(url) for url in urls]
+    good_urls = [url for url in good_urls if url not in database]
     if good_urls:
+        cl.block_many_urls(good_urls)
+        for url in good_urls:
+            database.add(url)
         flash(
             request,
             f"Successfuly imported {len(good_urls)} URLs into the list",
